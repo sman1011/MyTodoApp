@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity(){
         if (supportFragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG) == null) {
             Log.d(LOG_TAG, "room_fragment")
             supportFragmentManager.beginTransaction()
-                .add(R.id.room_fragment, NotesFragment()).addToBackStack(null).commit()
+                .add(R.id.room_fragment, NotesFragment()).commit()
         }
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity(){
                 Log.d(LOG_TAG, "Add item")
                 //Return true, if you handled the menu click
                 val dialog = SimpleDialogFragment()
-                dialog.show(supportFragmentManager, "COMPLEX_DIALOG_FRAGMENT_TAG")
+                dialog.show(supportFragmentManager, "SIMPLE_DIALOG_FRAGMENT_TAG")
+                supportFragmentManager.popBackStack()
                 true
             }
 

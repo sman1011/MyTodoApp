@@ -1,9 +1,11 @@
 package com.example.mytodoapp.room.view
 
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.appcompat.view.menu.MenuView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -40,15 +42,11 @@ class ContentFragment: Fragment()  {
 
         Log.d(LOG_TAG, "Fragment Content: onCreate")
         //Fragment wants to be notified when Menu items have been clicked
-
         setHasOptionsMenu(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.delete_menu, menu)
-        val mainActivityView = (activity as MainActivity)
-
-
         super.onCreateOptionsMenu(menu, inflater)
     }
     @SuppressLint("SetTextI18n")
@@ -56,7 +54,7 @@ class ContentFragment: Fragment()  {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View ? {
+    ): View {
         Log.d(LOG_TAG, "Fragment Notes: onCreateView")
         _binding = FragmentContentBinding.inflate(inflater, container, false)
 
