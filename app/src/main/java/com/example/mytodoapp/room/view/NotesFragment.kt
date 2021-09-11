@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
@@ -21,10 +20,20 @@ import com.example.mytodoapp.room.NoteApplication
 import com.example.mytodoapp.room.model.db.Note
 import com.example.mytodoapp.room.viewmodel.NoteViewModel
 import com.example.mytodoapp.room.viewmodel.NoteViewModelFactory
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 
 private const val LOG_TAG = "NotesFragment"
 private const val NOTES_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG"
+private const val EMPTY_FRAGMENT_TAG = "EMPTY_FRAGMENT_TAG"
+
+private const val NOTE = "NOTE"
+private const val TITLE = "TITLE"
+private const val CONTENT = "CONTENT"
+private const val TIME = "TIME"
+
+private const val REQUEST = "REQUEST"
 
 class NotesFragment : Fragment() {
 
@@ -38,11 +47,10 @@ class NotesFragment : Fragment() {
     private var _binding: FragmentNotesBinding? = null
     private val binding get() = _binding!!
     private val listAdapter = NoteListAdapter(::onClick)
-    private var counter = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(LOG_TAG, "Fragment Notes: onCreate")
+
         //Fragment wants to be notified when Menu items have been clicked
         setHasOptionsMenu(true)
     }
@@ -51,22 +59,29 @@ class NotesFragment : Fragment() {
         viewGroup: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         Log.d(LOG_TAG, "Fragment Notes: onCreateView")
         _binding = FragmentNotesBinding.inflate(inflater)
 
-        with(binding.notesList) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = listAdapter
-            //For performance optimization
-            setHasFixedSize(true)
-        }
+            Log.d(LOG_TAG, "Fragment Notes: else")
+            with(binding.notesList) {
+                layoutManager = LinearLayoutManager(context)
+                adapter = listAdapter
+                //For performance optimization
+                setHasFixedSize(true)
+            }
 
-        noteViewModel.allNotes.observe(viewLifecycleOwner) { list ->
-            listAdapter.submitList(list.sortedByDescending {
-                it.createTime
-            })
-            Log.d(LOG_TAG, "Fragment Notes: $list")
-        }
+            noteViewModel.allNotes.observe(viewLifecycleOwner) { list ->
+                if (list.isEmpty()) {
+                    loadFragment()
+                } else {
+
+                   listAdapter.submitList(list.sortedByDescending {
+                        it.createTime
+                    })
+                    Log.d(LOG_TAG, "Fragment Notes: $list")
+                }
+            }
 
         return binding.root
     }
@@ -75,11 +90,11 @@ class NotesFragment : Fragment() {
     private fun onClick(note: Note) {
         Log.d(LOG_TAG, "Clicked note ${note.id}")
         setFragmentResult(
-            "REQUEST",
-            bundleOf("NOTE" to note.id.toString(),
-            "TITLE" to note.noteTitle,
-            "CONTENT" to note.noteContent,
-            "TIME" to note.createTime)
+            REQUEST,
+            bundleOf(NOTE to note.id.toString(),
+            TITLE to note.noteTitle,
+            CONTENT to note.noteContent,
+            TIME to note.createTime)
         )
 
         val mainActivityView = (activity as MainActivity)
@@ -89,6 +104,17 @@ class NotesFragment : Fragment() {
             setReorderingAllowed(true)
             addToBackStack(null)
         }
+
+    }
+    private fun loadFragment(){
+        val mainActivityView = (activity as MainActivity)
+        mainActivityView.supportFragmentManager.beginTransaction()
+            .replace(R.id.room_fragment, EmptyFragment()).commit()
+    }
+    private fun isValidIdentifier(s: String): Boolean {
+        val p: Pattern = Pattern.compile("a*b")
+        val m: Matcher = p.matcher("aaaaab")
+        return m.matches()
     }
 
 }

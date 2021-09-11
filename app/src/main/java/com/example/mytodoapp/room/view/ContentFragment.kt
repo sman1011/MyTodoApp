@@ -6,8 +6,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.appcompat.view.menu.MenuView
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import com.example.mytodoapp.MainActivity
 
@@ -20,22 +22,23 @@ import com.example.mytodoapp.room.viewmodel.NoteViewModelFactory
 
 private const val LOG_TAG = "ContentFragment"
 private const val CONTENT_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG"
-private var noteItem = "0"
-private var noteTitle = ""
-private var noteContent = ""
-private var noteTime = ""
+
+private const val NOTE = "NOTE"
+private const val TITLE = "TITLE"
+private const val CONTENT = "CONTENT"
+private const val TIME = "TIME"
+
+private const val DELETE = "DELETE"
+private const val REQUEST = "REQUEST"
+
+private var noteItem:String? = null
+private var noteTitle:String? = null
+private var noteContent:String? = null
+private var noteTime:String? = null
 
 class ContentFragment: Fragment()  {
     private var _binding: FragmentContentBinding? = null
     private val binding get() = _binding!!
-
-
-    private val noteViewModel: NoteViewModel by viewModels {
-        //This code will only be called, when the fragment is already attached to the activity.
-        //therefore we can safely call requireActivity()
-        val application: NoteApplication = requireActivity().application as NoteApplication
-        NoteViewModelFactory(application.repository)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,18 +63,24 @@ class ContentFragment: Fragment()  {
 
         val mainActivityView = (activity as MainActivity)
         mainActivityView.supportFragmentManager
-            .setFragmentResultListener("REQUEST", this) { requestKey, bundle ->
+            .setFragmentResultListener(REQUEST, this) { requestKey, bundle ->
 
-                noteItem = bundle.getString("NOTE").toString()
-                noteTitle = bundle.getString("TITLE").toString()
-                noteContent = bundle.getString("CONTENT").toString()
-                noteTime = bundle.getString("TIME").toString()
+                noteItem = bundle.getString(NOTE).toString()
+                noteTitle = bundle.getString(TITLE).toString()
+                noteContent = bundle.getString(CONTENT).toString()
+                noteTime = bundle.getString(TIME).toString()
 
                 Log.d(LOG_TAG, "Result Title: $noteItem")
- //               Log.d(LOG_TAG, "Result Content: $resultContent")
                 binding.textInfo.text = noteTitle
                 binding.textInfo1.text = noteContent
                 binding.textTime.text = noteTime
+                setFragmentResult(
+                    DELETE,
+                    bundleOf(NOTE to noteItem,
+                        TITLE to noteTitle,
+                        CONTENT to noteContent,
+                        TIME to noteTime)
+                )
 
             }
 
@@ -84,17 +93,13 @@ class ContentFragment: Fragment()  {
             R.id.delete_item -> {
 
                 Log.d(LOG_TAG, "Delete item")
-                noteViewModel.delete(Note(noteItem.toLong(), noteTitle, noteContent, noteTime))
-                val mainActivityView = (activity as MainActivity)
-                mainActivityView.supportFragmentManager.popBackStack()
+                val dialog = DeleteDialogFragment()
+                dialog.show(childFragmentManager, "DELETE_DIALOG_FRAGMENT_TAG")
+//                noteViewModel.delete(Note(noteItem.toLong(), noteTitle, noteContent, noteTime))
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onDestroyOptionsMenu() {
-        super.onDestroyOptionsMenu()
     }
 
 }

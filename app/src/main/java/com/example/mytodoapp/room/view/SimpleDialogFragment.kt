@@ -9,11 +9,12 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.fragment.app.DialogFragment
+import androidx.core.os.bundleOf
+import androidx.fragment.app.*
+import com.example.mytodoapp.MainActivity
 
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.example.mytodoapp.R
+import com.example.mytodoapp.adapter.NoteListAdapter
 
 import com.example.mytodoapp.databinding.FragmentSimpleDialogBinding
 import com.example.mytodoapp.room.NoteApplication
@@ -44,15 +45,6 @@ class SimpleDialogFragment : DialogFragment() {
     private var _binding: FragmentSimpleDialogBinding? = null
     private val binding get() = _binding!!
 
-    override fun onAttach(context: Context) {
-        Log.d(LOG_TAG, "onAttach")
-        super.onAttach(context)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(LOG_TAG, "onCreate")
-    }
 
     @SuppressLint("SimpleDateFormat")
     @RequiresApi(Build.VERSION_CODES.O)
@@ -93,10 +85,18 @@ class SimpleDialogFragment : DialogFragment() {
                 Log.d(LOG_TAG, "Positive button clicked")
                 val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                 val currentDate = sdf.format(Date()).toString()
-                addNote(Note(0, "${binding.dialogTitle.text}",
-                    "${binding.dialogContent.text}",
-                    currentDate
-                ))
+                if(binding.dialogTitle.text.isNotBlank()) {
+                    addNote(
+                        Note(
+                            0, "${binding.dialogTitle.text}",
+                            "${binding.dialogContent.text}",
+                            currentDate
+                        )
+                    )
+
+                    loadFragment()
+                }
+
             }
             .setNegativeButton(R.string.dialog_fragment_negative_text) { dialog, id ->
                 Log.d(LOG_TAG, "Negative button clicked")
@@ -111,6 +111,12 @@ class SimpleDialogFragment : DialogFragment() {
     private fun addNote(note: Note) {
         Log.d(LOG_TAG, "Added note ${note.id}")
         noteViewModel.create(note)
+    }
+
+    private fun loadFragment(){
+        val mainActivityView = (activity as MainActivity)
+        mainActivityView.supportFragmentManager.beginTransaction()
+            .replace(R.id.room_fragment, NotesFragment()).commit()
     }
 
 }

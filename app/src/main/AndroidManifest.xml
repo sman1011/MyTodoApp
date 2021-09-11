@@ -3,6 +3,7 @@
     package="com.example.mytodoapp">
 
     <application
+
         android:name=".room.NoteApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
